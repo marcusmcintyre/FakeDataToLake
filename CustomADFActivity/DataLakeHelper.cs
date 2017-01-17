@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.Rest.Azure.Authentication;
 using Microsoft.Rest;
+using Microsoft.Azure.Management.DataLake.Store.Models;
 
 namespace CustomADFActivity
 {
@@ -23,7 +24,6 @@ namespace CustomADFActivity
         private string client_id = "831733da-f1dc-42f3-bf84-598ff3a92313";
         private string client_key = "3oR9VxnImRBuKVJ+MMKe1uOqY3RLBSsYHCsbWx0xk6g= ";
         private string subscription_id = "8a7e1230-6a2c-4af1-9aab-05c49db1006e";
-        private string tenant_id = "3b77959e-bcac-4620-b8dc-2a3c338111e7";
         private string adls_account_name = "marcusdatalakestore";
         public DataLakeHelper()
         {
@@ -114,5 +114,12 @@ namespace CustomADFActivity
             inner_client.FileSystem.Append(adls_account_name, path, ms);
             Console.WriteLine("Data Appended");
         }
+
+        // List files and directories
+        public List<FileStatusProperties> ListItems(string directoryPath)
+        {
+            return inner_client.FileSystem.ListFileStatus(adls_account_name, directoryPath).FileStatuses.FileStatus.ToList();
+        }
+
     }
 }

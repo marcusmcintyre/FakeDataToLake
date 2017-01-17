@@ -12,6 +12,7 @@ using Microsoft.Azure.Management.DataFactories.Runtime;
 
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Azure.Management.DataLake.Store.Models;
 
 namespace CustomADFActivity
 {
@@ -23,8 +24,10 @@ namespace CustomADFActivity
             IEnumerable<GitHubUserDto> enumOfUsers = api.GetUsers();
             List<GitHubUserDto> listOfUsers = enumOfUsers.ToList<GitHubUserDto>();
             List<string> listOfUserStrings = new List<string>();
+            DataLakeHelper dl = new DataLakeHelper();
             string current_dir = "/";
             string file_name = "newfile.txt";
+            List<FileStatusProperties> listOfFiles = dl.ListItems(current_dir);
 
             foreach (var row in api.GetUsers())
             {
@@ -33,13 +36,20 @@ namespace CustomADFActivity
             string userString = listOfUsers.ElementAt(0).ToString();
             Console.WriteLine("got Users successfully!");
 
-            DataLakeHelper dl = new DataLakeHelper();
 
             try
             {
                 var rows = new List<string>();
                 var count = 0;
                 var is_file_created = false;
+
+                foreach (var file in listOfFiles)
+                {
+                    if (file.PathSuffix.Equals(file_name))
+                    {
+                        is_file_created = true;
+                    }
+                }
 
                 foreach (var row in api.GetUsers())
                 {
@@ -56,16 +66,14 @@ namespace CustomADFActivity
                     rows = new List<string>();
                 }
 
-                if (count <= 0) return new Dictionary<string, string>();
-
                 dl.StoreData(current_dir + file_name, rows, is_file_created);
 
 
             }
             catch (Exception e)
             {
-                logger.Write(e.Message);
-                logger.Write(e.InnerException.Message);
+                Console.Write(e.Message);
+                Console.Write(e.InnerException.Message);
                 throw;
             }
             return new Dictionary<string, string>();
